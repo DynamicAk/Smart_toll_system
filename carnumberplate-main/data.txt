@@ -1,0 +1,6 @@
+train: ../ak/images/training
+val: ../ak/labels/validation
+#number of classes
+nc: 1
+#class names
+names: ['surfing']
