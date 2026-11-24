@@ -1,0 +1,816 @@
+% ============================================================
+%  IEEE Conference Paper – IEEEtran (conference mode)
+%  Title : AI-Based Smart Toll Management Using YOLOv8,
+%          EasyOCR, and Lane-wise Congestion Prediction
+%  Authors: Sourav Chauhan, Dr. Dharmendra Kr. Jhariya,
+%           Amit Kumar
+%  NIT Delhi / DIT University, May 2026
+% ============================================================
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+% ── Packages ────────────────────────────────────────────────
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{url}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{balance}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+% ============================================================
+\begin{document}
+
+% ── Title ───────────────────────────────────────────────────
+\title{AI-Based Smart Toll Management Using YOLOv8 License Plate\
+Detection, EasyOCR, and Lane-wise Congestion Prediction}
+
+% ── Authors ─────────────────────────────────────────────────
+\author{
+  \IEEEauthorblockN{Abhishek Kumar}
+  \IEEEauthorblockA{\textit{Dept. of Electronics \&}\\
+    \textit{Communication Engg.}\\
+    \textit{National Institute of}\\
+    \textit{Technology Delhi}\\
+    Delhi, India\\
+    221220003@nitdelhi.ac.in}
+  \and
+  \IEEEauthorblockN{Prof. (Dr.) Jyoteesh Malhotra.}
+  \IEEEauthorblockA{\textit{Dept. of Electronics \&}\\
+    \textit{Communication Engg.}\\
+    \textit{National Institute of}\\
+    \textit{Technology Delhi}\\
+    Delhi, India\\
+    jyoteesh@nitdelhi.ac.in}
+  \and
+  \IEEEauthorblockN{Himani Daulat}
+  \IEEEauthorblockA{\textit{Dept. of Electronics \&}\\
+    \textit{Communication Engg.}\\
+    \textit{National Institute of}\\
+    \textit{Technology Delhi}\\
+    Delhi, India\\
+    himanidaulat@nitdelhi.ac.in}
+}
+
+\maketitle
+
+% ── Abstract ────────────────────────────────────────────────
+\begin{abstract}
+Toll plazas continue to be a problem in India.
+The challenges include long lines of vehicles, human error in vehicle processing, and revenue.
+Limited traffic visibility, leakage.
+FASTag-based RFID tolling has enhanced the process of automatic payment facility,
+It does not cover vehicle identification, transaction verification,
+or traffic prediction.
+This paper identifies an all-encompassing, integrated smart toll management
+framework that combines YOLOv8-based license plate detection,
+EasyOCR for text recognition and SQLite-based wallet for storing FASTag.
+A congestion prediction module, based on simulation, and a Random Forest congestion predictor module is incorporated into
+a unified Streamlit dashboard.
+Two YOLOv8 variants YOLOv8n (Nano) and YOLOv8s (Small) are
+The trained and evaluated using a dataset of Indian licence plates.
+YOLOv8n's precision is 0.9670 and recall is 1.0000, and mAP@50 of 0.9757, making it the preferred model for
+real-time toll deployment.
+It has a slightly increased MAP@50-95: 0.8522 with YOLOv8s.
+When quality of the OCR crop is important, the result is better localization.
+The OCR module is tested with 119 plate images,
+the results are shown to be 0.74 and 85.96\% accurate, respectively, in terms of detection rate and character-level accuracy.
+challenges that are not overcome by blur, glare, and such with similar character
+confusion.
+The FASTag simulation module is able to simulate successful and failed transactions and receive them as acknowledgment.
+Logging gate status and revenue, low-balance transactions.
+A prototype of lane-wise congestion predicting system based on synthetic Automatic Number Plate Recognition (ANPR)
+The overall accuracy of the model using logs and Random Forest classifier is 86.45\%.
+Accurate prediction of congestion 15 min ahead.
+The future system is a deployable base for
+next generation smart toll booth automation.
+\end{abstract}
+
+\begin{IEEEkeywords}
+ANPR, YOLOv8, EasyOCR,
+FASTag Simulation, Smart Toll Management, Congestion Prediction,
+Random Forest, SQLite, Streamlit, Indian license plates.
+\end{IEEEkeywords}
+
+% ============================================================
+\section{Introduction}
+% ============================================================
+
+Transportation infrastructure is the economic backbone of any place. Toll plazas are one of the very few parts of the nation's operation junctions.
+In India alone there are thousands of toll booths on national roads,
+highways and expressways, all processing millions of
+the volume of vehicle transactions by the day.
+However, a substantial percentage of this activity is still taking place.
+Of these plazas, 20\% of them are still using manual processes: a human operator
+who is responsible for determining the vehicle type, gathering and/or confirming payment,
+log the transaction, and trigger the gate.
+The outcome is foreseeable - long queues, delayed throughput,
+operator fatigue and inability to keep up with it.
+Increased traffic volumes particularly during peak hours, festivals,
+and holidays.
+
+India's FASTag service is based on RFID technology.
+Appropriately decreased cash toll payouts at toll booths.
+Vehicles with a valid, funded FASTag can pass through
+Manually payable lanes. No dedicated lanes without stop at the toll booth.
+It's a real step forward.
+However, FASTag is not the complete solution to the problem.
+Blocked wallets, lack of balances, compromised wallets, etc.
+Even with blacklisted tags and reader malfunctions, lane
+blockages.
+More significantly, FASTag doesn't offer a visual way of
+matching a car with a database,
+Real time monitoring of the health of the toll lane.
+
+ANPR - the computer vision
+technology that reads the registration number of the vehicle from the camera.
+Images is a great solution to complement RFID-based tolling.
+When ANPR is integrated with a vehicle database, payment module,
+it can automatically identify vehicles on and off the road in and around the school, via either and dashboard,
+while verifying transactions, detecting low balances, and operating with a minimum of overhead.
+Monitoring without tagging the vehicle with any hardware.
+Recent advances in deep learning, particularly the YOLO family of
+Real-time ANPR is both fast and accurate, using single-stage object detectors.
+Sufficiently correct and usable in practice.
+
+This paper contributes to the literature as follows:
+\begin{itemize}
+  \item A relative evaluation of YOLOv8n and YOLOv8s. For Indian license plate detection, covering precision, recall , mAP@50, and mAP@50--95 .
+  \item A multi-stage OCR preprocessing and frame wise pipeline for EasyOCR including Indian plate format validation and frame wise majority voting.
+  \item An end to end FASTag style toll transaction simulation backed by a structured SQLite database.
+  \item An experimental lane wise congestion prediction module using a Random Forest classifier trained on synthetic ANPR logs.
+  \item A unified Streamlit dashboard that integrates complete system outputs into a single operator interface.
+\end{itemize}
+
+% ============================================================
+\section{Related Work}
+% ============================================================
+
+\subsection{Toll Collection Systems}
+
+Traditional manual toll collection suffers from advanced per vehicle transaction time, cash handling errors, motivating mismatch congestion during peak traffic \cite{fastag_npci}. Electronic Toll Collection (ETC) systems , including India's FASTag based NETC platform \cite{ihmcl}, have reduced manual intervention significantly. However , RFID based systems remain vulnerable to tag failures , wallet depletion, and mismatch errors, motivating the integration of computer vision based vehicle identification as a complementary layer.
+
+\subsection{ANPR and Object Detection}
+
+Traditional ANPR pipelines use edge detection, thresholding and
+we used contour analysis for plate localization in the following manner \cite{otsu1979}.
+These methods are effective under controlled conditions, but suffer in degraded conditions like under variable lighting, motion blur and plate tilt conditions.
+The machine learning techniques selected are based on HOG feature and SVM classifiers 
+improved robustness and yet relies on handcrafted features that
+poorly generalize to a broad range of data sets.
+
+This was overcome by deep learning, which learned features directly from
+data.
+There are two-stage detectors like faster R-CNN \cite{faster_rcnn} that provide
+High accuracy but high computer time requirements for real time use.
+One-stage detectors, especially YOLO family \cite{yolo_orig}
+achieve similar accuracy with much greater frame rates, allowing them to be
+the recommended technology for toll lanes.
+Srinivasan \emph{et al.} have shown that the Yolov8 network \cite{yolov8_lpr} can be used to perform LPR.
+A novel vehicle detection model based on YOLOv8, which employs deformable convolution.
+a classification system and a license plate recognition system, which are incorporated.
+We use low-light enhancement and super-resolution preprocessing to prepare data for these methods.
+High accuracy with difficult real-world situations.
+The virtual toll collecting network is designed with the image using YOLOv8 and OCR.
+the concept of cloud virtual machine, compute engine, database and dashboard.
+
+
+\subsection{OCR for License Plates}
+
+Early OCR accuracy used template matching and visually pairs which failed with non standard fonts or occluded plates. Latest OCR engines such as Tesseract \cite{tesseract} and EasyOCR \cite{easyocr} provide end to end recognition pipelines with non standard support and confidence scoring. OCR engines for Indian plates remains challenged by font variability, territorial formats , dust , glare , and EasyOCR similar character segmentation , (O/0 , I/1, S/5, B/8) \cite{nadiminti2022}.
+\subsection{Congestion Prediction}
+
+Traffic flow prediction using machine learning has shown studied extensively in Intelligent Transportation Systems (ITS). Random Forest has shown solid performance on tabular traffic datasets due to its resilience to model nonlinear feature interactions and its resilience to noise \cite{breiman2001,sklearn}. Features such as vehicle count, queue length , processing time , time of day, and its condition are normally used for short congestion forecasting .
+
+% ============================================================
+\section{System Architecture and Methodology}
+% ============================================================
+\subsection{Overview}
+The proposed system will be based on the modular pipeline structure.
+(Fig.~\ref{fig:architecture}).
+The initial stage of the image or video frame processing is to run the YOLOv8.
+A detection model is developed to detect the license plate region.
+Cropping of detected area is performed and then a multi-stage post processing is performed.
+To be fed into EasyOCR for text, it must undergo preprocessing pipeline extraction
+OCR output will be preprocessed and compared with Indian plate.
+Then formatted and compared to a SQLite vehicle database.
+The result of the match is then used in the toll module to calculate the toll,
+If there is sufficient funds in the FASTag wallet, it will deduct the toll amount.
+Money is available; records the transaction; produces a gate status.
+Meanwhile, a congestion prediction module takes congestion prediction from a lane-wise view.
+One of the major elements of the aggregated traffic is the ability to forecast congestion 15 minutes ahead of time.
+The results are displayed in one Streamlit dashboard.
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\columnwidth]{fig_system_architecture.png}
+  \caption{System architecture of the proposed AI-based smart toll
+           management framework showing the full pipeline from image
+           acquisition to dashboard visualization.}
+  \label{fig:architecture}
+\end{figure}
+
+\subsection{Dataset}
+
+The Indian Vehicle License Plate is used for training the detection model.
+Dataset obtained from Kaggle \cite{kaggle_dataset} and supplemented
+With additional Indian vehicle images from various sources.
+sources in order to enhance lighting and plate type coverage.
+and vehicle categories.
+All images have been tagged in YOLO format (one class)
+\texttt{license\_plate}.
+The data is partitioned into training and validation sets according to the following steps:
+The standard YOLO directory structure.
+
+The issue of recognising Indian plates is significantly different from recognising plates from other countries.
+There is substantial variation in state codes and RTO.
+The use of identifiers, fonts, character spacing, plate colours (white)
+private (yellow), commercial (yellow), and electric vehicles (green).
+and physical condition.
+This requires training on data specific to India instead of global data.
+Transferring knowledge from one pre-trained model to another.\cite{nadiminti2022}.
+
+\subsection{YOLOv8 Training Configuration}
+
+Both YOLOv8n and YOLOv8s are trained for 90 epochs on the same
+dataset using pretrained weights, AdamW optimizer, and the
+configuration summarized in Table~\ref{tab:training}.
+Training is performed on Kaggle Notebook using dual NVIDIA Tesla
+T4 GPUs.
+
+\begin{table}[H]
+\centering\vspace{-4pt}
+\caption{YOLOv8 Training Configuration}
+\label{tab:training}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Parameter} & \textbf{YOLOv8n} & \textbf{YOLOv8s} \\
+\midrule
+Image size      & 640$\times$640 & 640$\times$640 \\
+Batch size      & 16             & 16             \\
+Epochs          & 90             & 90             \\
+Optimizer       & AdamW          & AdamW          \\
+Learning rate   & 0.001          & 0.001          \\
+Weight decay    & 0.0005         & 0.0005         \\
+Patience        & 20             & 20             \\
+GPU             & Tesla T4       & Tesla T4       \\
+\bottomrule
+\end{tabular}\vspace{-4pt}
+\end{table}
+
+Data augmentation is applied during training to improve
+generalization across real-world toll conditions.
+Key augmentation settings include HSV hue variation (0.015),
+saturation (0.7), brightness (0.4), random translation (0.1),
+scaling (0.5), horizontal flip probability (0.2), and mosaic
+augmentation (disabled in the final 20 epochs).
+
+\subsection{OCR Preprocessing Pipeline}
+
+Even a well-localized plate crop can contain noise, blur, shadows,
+or glare that impairs OCR accuracy.
+A multi-stage preprocessing pipeline (Fig.~\ref{fig:ocr_pipeline})
+is applied to each cropped plate image before passing it to
+EasyOCR:
+\begin{enumerate}
+  \item Grayscale conversion and resizing
+  \item Gaussian noise reduction
+  \item Unsharp masking for edge sharpening
+  \item CLAHE for local contrast enhancement under uneven lighting
+  \item Otsu thresholding for uniform-background plates
+  \item Adaptive thresholding for non-uniform illumination
+\end{enumerate}
+Multiple preprocessing variants are tested in parallel and the
+result with the highest EasyOCR confidence and a valid Indian
+plate format is selected as the final output.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\columnwidth]{fig_ocr_pipeline.png}
+  \caption{Multi-stage OCR preprocessing pipeline applied to
+           cropped license plate images before EasyOCR text
+           extraction.}
+  \label{fig:ocr_pipeline}
+\end{figure}
+
+\subsection{Plate Text Cleaning and Format Validation}
+
+Raw EasyOCR output may contain spaces, hyphens, symbols, or
+incorrect casing.
+A post-processing step converts text to uppercase, strips
+non-alphanumeric characters, and validates the result against the
+standard Indian plate regex.
+
+\begin{equation}
+  \texttt{\^{}[A-Z]\{2\}[0-9]\{1,2\}[A-Z]\{1,3\}[0-9]\{4\}\$}
+  \label{eq:regex}
+\end{equation}
+
+For video input, frame-wise detections are aggregated into
+vehicle-wise events and majority voting is applied across frames
+to select the most frequently occurring valid plate string,
+reducing the impact of single-frame OCR errors.
+
+\subsection{Database and FASTag Simulation}
+
+The system uses a local SQLite database with four tables:
+\texttt{vehicles}, \texttt{fastag\_accounts},
+\texttt{toll\_rates}, and \texttt{transactions}.
+The vehicle registration number serves as the primary key linking
+all tables.
+The FASTag toll deduction logic is:
+
+\begin{equation}
+\text{gate} =
+\begin{cases}
+\text{OPEN}   & \text{if } B_{\text{wallet}} \geq T_{\text{toll}} \\
+\text{CLOSED} & \text{otherwise}
+\end{cases}
+\label{eq:gate}
+\end{equation}
+
+where $B_{\text{wallet}}$ is the current FASTag wallet balance and
+$T_{\text{toll}}$ is the category-based toll amount.
+On a successful transaction, the wallet is decremented and the
+record is logged with payment status, wallet balance before and
+after, and a timestamp.
+
+\subsection{Lane-wise Congestion Prediction}
+
+In this case, because no live ANPR logs or dataset of an operational toll plaza were available. So a realistic synthetic dataset is created to train such a prediction model.
+The factors that impact the amount of time required to process vehicles, which lanes they are assigned to, and the number of arrivals per vehicle.
+Conditions and temporal patterns over several days.
+Raw event level logs are aggregated into lane-wise 5 min time logs.
+windows.
+Thirteen features are engineered for each window, including
+\texttt{vehicle\_count\_5min}, \texttt{avg\_processing\_time\_sec},
+\texttt{queue\_length}, \texttt{waiting\_time\_min},
+\texttt{15-minute\_rolling\_counts}, \texttt{hour}, \texttt{day\_of\_week},
+\texttt{is\_weekend}, \texttt{is\_holiday}, \texttt{weather},
+and \texttt{lane\_id}.
+Queue length and waiting time are computed as:
+
+\begin{align}
+  QL  &= \max(0,\; N_{\text{arrive}} - N_{\text{processed}})
+         \label{eq:ql} \\
+  W   &= \frac{QL \times t_{\text{avg}}}{60} \quad [\text{min}]
+         \label{eq:wait}
+\end{align}
+
+A Random Forest classifier (200 estimators, minimum leaf size 2)
+is trained on an 80/20 time-based split to predict congestion
+level Low, Medium, or High 15 minutes ahead.
+Categorical features (\texttt{weather}, \texttt{lane\_id}) are
+encoded using \texttt{OneHotEncoder} within a
+\texttt{ColumnTransformer} pipeline.
+
+% ============================================================
+\section{Results and Discussion}
+% ============================================================
+
+\subsection{YOLOv8 Detection Performance}
+
+Both models are evaluated on the held-out validation set using
+standard object detection metrics.
+Results are shown in Table~\ref{tab:yolo_results}.
+
+\begin{table}[H]
+\centering\vspace{-4pt}
+\caption{YOLOv8n and YOLOv8s Detection Results}
+\label{tab:yolo_results}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Model} & \textbf{Prec.} & \textbf{Recall} &
+\textbf{mAP@50} & \textbf{mAP@50--95} \\
+\midrule
+YOLOv8n & 0.9670 & \textbf{1.0000} & \textbf{0.9757} & 0.8488 \\
+YOLOv8s & \textbf{0.9698} & 0.9969 & 0.9753 & \textbf{0.8522} \\
+\bottomrule
+\end{tabular}\vspace{-4pt}
+\end{table}
+
+Both models achieve approximately 97.5\% mAP@50, confirming
+strong detection performance on Indian license plates.
+YOLOv8n achieves \textbf{perfect recall} (1.0000), meaning it
+missed zero license plates in the validation set---a critical
+property for toll applications where a missed detection
+translates directly into a failed transaction.
+YOLOv8s achieves a marginally higher mAP@50--95 (0.8522
+vs.\ 0.8488), indicating better bounding box localization under
+stricter IoU thresholds, which benefits downstream OCR by
+producing tighter, cleaner plate crops.
+
+Fig.~\ref{fig:yolo_comparison} shows the training and validation
+curves for both models.
+The convergence behavior is stable, with no significant
+overfitting observed.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\columnwidth]{fig_yolo_comparison.png}
+  \caption{Comparative accuracy and validation performance curves
+           for YOLOv8n and YOLOv8s over 90 training epochs.}
+  \label{fig:yolo_comparison}
+\end{figure}
+
+\textbf{Deployment recommendation:}
+YOLOv8n is the preferred model for real-time multi-lane toll
+deployment due to its lighter architecture, lower inference
+latency, and perfect recall.
+YOLOv8s is recommended when OCR accuracy is the primary bottleneck
+and better localized plate crops are needed to improve character
+recognition quality.
+
+\subsection{OCR Recognition Performance}
+
+The OCR module is evaluated on 119 Indian license plate images.
+Results are summarized in Table~\ref{tab:ocr_results}.
+
+\begin{table}[H]
+\centering\vspace{-4pt}
+\caption{EasyOCR Evaluation Results (119 plate images)}
+\label{tab:ocr_results}
+\begin{tabular}{lc}
+\toprule
+\textbf{Metric}           & \textbf{Value} \\
+\midrule
+Total images tested       & 119 \\
+Detection rate            & 100.0\% \\
+Exact plate-level accuracy & 47.9\% \\
+Character-level accuracy  & 85.96\% \\
+Character Error Rate      & 14.04\% \\
+\bottomrule
+\end{tabular}\vspace{-4pt}
+\end{table}
+
+The 100\% detection rate confirms that every plate region
+successfully passed through the OCR stage.
+The gap between character-level (85.96\%) and exact plate-level
+(47.9\%) accuracy reveals a well-known pattern in license plate
+OCR: even one or two character errors render the full plate string
+unusable for database matching.
+Table~\ref{tab:sample_ocr} shows representative sample outputs.
+
+\begin{table}[H]
+\centering\vspace{-4pt}
+\caption{Sample OCR Output Cases}
+\label{tab:sample_ocr}
+\begin{tabular}{L{1.5cm}L{1.6cm}L{1.8cm}C{1.2cm}}
+\toprule
+\textbf{Ground Truth} & \textbf{Raw OCR} &
+\textbf{Preprocessing} & \textbf{Result} \\
+\midrule
+MH05DS8679 & MH05DS8679 & Otsu           & Correct \\
+HP20E3953  & HP20E39531 & Sharpening     & Correct after cleaning \\
+\bottomrule
+\end{tabular}\vspace{-4pt}
+\end{table}
+
+The primary OCR failure modes are motion blur, low resolution,
+glare, non-standard fonts, and similar-character confusion
+(O/0, I/1, S/5, B/8, D/0, Z/2).
+Post-processing (regex validation, majority voting across frames)
+significantly reduces the false-match rate before database lookup.
+
+Fig.~\ref{fig:ocr_output} illustrates the OCR pipeline output on
+representative plate crops.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\columnwidth]{fig_ocr_output.png}
+  \caption{EasyOCR output on sample Indian license plate crops
+           after multi-stage preprocessing, showing correct and
+           post-processing-corrected recognition results.}
+  \label{fig:ocr_output}
+\end{figure}
+
+\subsection{FASTag Toll Transaction Results}
+
+Table~\ref{tab:transactions} shows the toll transaction outcomes
+for three test vehicles processed through the complete pipeline.
+
+\begin{table}[H]
+\centering\vspace{-4pt}
+\caption{FASTag Toll Transaction Results}
+\label{tab:transactions}
+\begin{tabular}{L{1.6cm}C{0.9cm}C{1.1cm}C{1.1cm}C{1.1cm}}
+\toprule
+\textbf{Plate} & \textbf{Toll} & \textbf{Bal. Before} &
+\textbf{Bal. After} & \textbf{Gate} \\
+\midrule
+DL7CD5017  & \rupee80 & \rupee850 & \rupee770 & OPEN \\
+DL3CBJ1384 & \rupee80 & \rupee120 & \rupee40  & OPEN \\
+HR26CO6869 & \rupee80 & \rupee50  & \rupee50  & CLOSED \\
+\bottomrule
+\end{tabular}\vspace{-4pt}
+\end{table}
+
+The first two vehicles have sufficient wallet balance and
+successfully complete their transactions (gate status: OPEN).
+The third vehicle has a wallet balance of \rupee50 against a toll
+of \rupee80; the transaction is rejected (payment status:
+LOW\_BALANCE), the wallet remains unchanged, and the gate stays
+CLOSED.
+This confirms the correctness of the decision logic in
+\eqref{eq:gate} and the end-to-end integration between the ANPR
+output and the payment module.
+
+\subsection{Dashboard Output}
+
+The Streamlit dashboard (Fig.~\ref{fig:dashboard}) provides a
+real-time unified view of all system outputs: detected plate
+number, OCR confidence, vehicle category, toll amount, payment
+status, gate status, wallet balances, total revenue, cumulative
+vehicle count, successful and failed payment statistics, and
+lane-wise congestion predictions.
+This single interface eliminates the need for separate monitoring
+tools and gives toll operators complete operational visibility.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\columnwidth]{fig_dashboard.png}
+  \caption{Streamlit dashboard showing ANPR telemetry, OCR
+           results, payment status, revenue summary, and
+           lane-wise congestion prediction output.}
+  \label{fig:dashboard}
+\end{figure}
+
+\subsection{Lane-wise Congestion Prediction}
+
+The congestion prediction module is tested on 80/20 split.
+Time-based train-test split of synthetic ANPR log data set.
+The results are included in Table \ref{tab:congestion}.
+\begin{table}[H]
+\centering\vspace{-4pt}
+\caption{Congestion Prediction Model Performance}
+\label{tab:congestion}
+\begin{tabular}{lc}
+\toprule
+\textbf{Metric}                  & \textbf{Value} \\
+\midrule
+Overall accuracy                 & 86.45\% \\
+Low congestion precision         & 0.95 \\
+Medium congestion precision      & 0.53 \\
+High congestion precision        & 0.54 \\
+Macro average F1-score           & 0.68 \\
+Weighted average F1-score        & 0.87 \\
+\bottomrule
+\end{tabular}\vspace{-4pt}
+\end{table}
+
+The model achieved a very accurate classification rate for Low (0.95),
+important in avoiding unnecessary lane activations.
+partly because of Lower precision (0.53–0.54), for both medium and high precision,
+the class boundaries of the synthetic dataset are not as definite as if there were real traffic data, it would produce.
+The confusion matrix shows that the majority of misclassifications are from between neighboring CCs (Medium$\leftrightarrow$High),
+this is inferior to the Low$\leftrightarrow$High switch, which is easier to use confusion.
+
+Feature importance analysis is used to identify \texttt{queue\_length},\texttt{rolling\_vehicle\_count\_15min}and \texttt{avg\_processing\_time\_sec}.
+In features results that are in keeping with physical intuition about what
+worsens congestion on toll lanes.
+The contribution of time-of-day (\texttt{hour}) and \texttt{lane\_id} is also included meaningfully recording the peak hour phenomena and lane-specific
+throughput differences.
+
+Fig.~\ref{fig:congestion} shows the predicted congestion level
+distribution and feature importance rankings.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\columnwidth]{fig_congestion.png}
+  \caption{Lane-wise congestion prediction results: (a) confusion
+           matrix and (b) Random Forest feature importance
+           rankings for the 15-minute-ahead prediction task.}
+  \label{fig:congestion}
+\end{figure}
+
+\subsection{Summary of Results}
+
+Table~\ref{tab:summary} consolidates expected versus actual
+performance across all system modules.
+
+\begin{table}[H]
+\centering\vspace{-4pt}
+\caption{Expected vs.\ Actual Results Across System Modules}
+\label{tab:summary}
+\begin{tabular}{L{2.0cm}L{2.3cm}L{2.3cm}}
+\toprule
+\textbf{Module} & \textbf{Expected} & \textbf{Actual} \\
+\midrule
+YOLOv8n detection  & High precision, real-time speed & Recall 1.000, mAP@50 97.57\% \\
+YOLOv8s detection  & Better localization & mAP@50--95 = 0.8522 \\
+OCR recognition    & Read full plate correctly & Char. acc. 85.96\%; exact acc. 47.9\% \\
+FASTag simulation  & Correct deduction logic & Successful; low-balance handled \\
+Dashboard          & Real-time visualization & Full ANPR + payment + congestion view \\
+Congestion pred.   & Predict 15-min ahead & 86.45\% overall accuracy \\
+\bottomrule
+\end{tabular}\vspace{-4pt}
+\end{table}
+
+% ============================================================
+\section{Discussion}
+% ============================================================
+
+\subsection{OCR as the Bottleneck}
+
+The results are definitely indicating that OCR is the most restricting factor of this present system.
+YOLOv8 detection is very accurate ($>$97.5\% mAP@50),
+the 47.9 \% exact plate accuracy implies that about half of all plates are not exact. There are at least one character error in recognized plates.
+In a production system the same errors would result in mismatches in the database.
+and failed transactions.
+
+There are three complimentary strategies that can fill this gap.
+First one is that a custom OCR model has to be trained on Indian license data only. Plate crops with exposure to full range of state codes,
+directly address the following: font styles, and plate conditions.
+The generalizations in general purpose EasyOCR.
+Secondly, OCR architectures based on Transformers can be used, e.g., TrOCR or
+the concept of Vision Transformers (ViT) has been found effective for various tasks on images.
+For this task, the scene text recognition works and the merit evaluation results application.
+For third, implement a frame-level majority voting (which is already implemented) as a the prototypes (as in this work) should be extended with confidence weighted
+to further minimize errors, aggregation and cross-frame consistency checks are performed 
+single-frame error propagation.
+\subsection{Congestion Prediction with Synthetic Data}
+
+The congestion module's 86.45\% overall accuracy on synthetic data
+is encouraging as a proof-of-concept, but the 0.53--0.54 precision
+on medium and high classes indicates that the model struggles at
+the boundaries between congestion tiers.
+This is expected with synthetic data, which cannot fully replicate
+the stochastic and correlated nature of real toll traffic.
+The key next step is collecting validated ANPR logs from an active
+toll plaza and recalibrating the congestion thresholds against
+ground-truth queue observations.
+
+\subsection{System Scalability}
+
+The current prototype uses a local SQLite database and a single-node
+Streamlit dashboard, which are appropriate for proof-of-concept
+validation but would need to be replaced for production deployment.
+A cloud-hosted relational database (e.g., PostgreSQL), a message
+queue for real-time event streaming, and a scalable dashboard
+service would be required for a multi-plaza, high-throughput
+deployment.
+Integration with the NETC/FASTag API would replace the simulated
+wallet module with actual payment transactions, enabling
+real-money toll deduction without any changes to the upstream
+ANPR pipeline.
+
+% ============================================================
+\section{Conclusion}
+% ============================================================
+
+This paper presented a complete AI-based smart toll management
+system that integrates YOLOv8 license plate detection, EasyOCR
+text recognition, SQLite-backed FASTag simulation, and a Random
+Forest congestion predictor into a unified Streamlit dashboard.
+
+The comparative evaluation of YOLOv8n and YOLOv8s on Indian
+license plate data confirms that both models are highly capable,
+with mAP@50 above 97.5\%.
+YOLOv8n's perfect recall (1.0000) makes it the optimal choice
+for real-time toll deployment, while YOLOv8s offers marginally
+superior localization when OCR crop quality is paramount.
+The OCR module achieves 100\% detection rate and 85.96\%
+character-level accuracy, with exact plate accuracy at 47.9\%
+identifying OCR as the primary area for improvement.
+The FASTag simulation module correctly handles both successful and
+low-balance transaction scenarios, demonstrating the viability of
+the end-to-end payment logic.
+The lane-wise congestion prediction module achieves 86.45\%
+accuracy on synthetic ANPR logs, providing a functional prototype
+for 15-minute-ahead congestion forecasting.
+
+Together, these results demonstrate that a fully automated,
+computer vision-driven toll management system is both technically
+feasible and practically deployable on standard hardware.
+Future work will focus on custom Indian OCR model development,
+real FASTag API integration, live CCTV deployment, and congestion
+model retraining on real toll plaza data.
+
+% ============================================================
+%  REFERENCES
+% ============================================================
+\balance
+
+\begin{thebibliography}{20}
+
+\bibitem{fastag_npci}
+National Payments Corporation of India,
+``NETC FASTag: Pay highway toll online through RFID,''
+NPCI Official Documentation.
+
+\bibitem{ihmcl}
+Indian Highways Management Company Limited,
+``FASTag and National Electronic Toll Collection,''
+IHMCL Official Documentation.
+
+\bibitem{otsu1979}
+N.~Otsu,
+``A threshold selection method from gray-level histograms,''
+\textit{IEEE Trans. Syst., Man, Cybern.}, vol.~SMC-9, no.~1,
+pp.~62--66, Jan.\ 1979.
+
+\bibitem{faster_rcnn}
+S.~Ren, K.~He, R.~Girshick, and J.~Sun,
+``Faster R-CNN: Towards real-time object detection with region
+proposal networks,''
+in \textit{Advances in Neural Information Processing Systems},
+2015.
+
+\bibitem{yolo_orig}
+J.~Redmon, S.~Divvala, R.~Girshick, and A.~Farhadi,
+``You only look once: Unified, real-time object detection,''
+in \textit{Proc. IEEE CVPR}, 2016, pp.~779--788.
+
+\bibitem{yolov8_lpr}
+R.~Srinivasan, D.~Rajeswari, A.~Arivarasi, and A.~Govindasamy,
+``Real-time vehicle classification and license plate recognition
+via deformable convolution-based YOLOv8 network,''
+\textit{IEEE Sensors J.}, vol.~24, no.~23,
+pp.~39771--39778, Dec.\ 2024.
+
+\bibitem{tesseract}
+R.~Smith,
+``An overview of the Tesseract OCR engine,''
+in \textit{Proc. 9th Int. Conf. Document Analysis and
+Recognition}, 2007, pp.~629--633.
+
+\bibitem{easyocr}
+JaidedAI,
+``EasyOCR: Ready-to-use OCR with 80+ supported languages,''
+GitHub Repository.
+
+\bibitem{nadiminti2022}
+S.~S.~Nadiminti, P.~K.~Gaur, and A.~Bhardwaj,
+``Exploration of an end-to-end automatic number-plate recognition
+neural network for Indian datasets,''
+\textit{arXiv:2207.06657}, 2022.
+
+\bibitem{sklearn}
+F.~Pedregosa \textit{et al.},
+``Scikit-learn: Machine learning in Python,''
+\textit{J. Mach. Learn. Res.}, vol.~12, no.~85,
+pp.~2825--2830, 2011.
+
+\bibitem{breiman2001}
+L.~Breiman,
+``Random forests,''
+\textit{Mach. Learn.}, vol.~45, pp.~5--32, 2001.
+
+\bibitem{kaggle_dataset}
+Saisirishan, ``Indian vehicle license plate dataset,''
+Kaggle Dataset, accessed May 2026.
+
+\bibitem{ultralytics}
+Ultralytics,
+``YOLOv8 documentation,''
+Ultralytics YOLO Docs, accessed May 2026.
+
+\bibitem{virtual_toll}
+A.~Ahamed~M, S.~Priya~N, G.~B.~Gogulraj, and R.~Preethi,
+``Virtual toll collection system using YOLOv8 and OCR,''
+in \textit{Proc. 3rd Int. Conf. Augmented Intelligence and
+Sustainable Systems}, 2025, pp.~1244--1251.
+
+\bibitem{ssd}
+W.~Liu \textit{et al.},
+``SSD: Single shot multibox detector,''
+in \textit{Proc. ECCV}, 2016, pp.~21--37.
+
+\bibitem{clahe}
+S.~M.~Pizer \textit{et al.},
+``Adaptive histogram equalization and its variations,''
+\textit{Comput. Vision, Graphics, Image Process.},
+vol.~39, no.~3, pp.~355--368, 1987.
+
+\bibitem{opencv}
+OpenCV Developers,
+``OpenCV documentation,''
+OpenCV Official Documentation, accessed May 2026.
+
+\bibitem{sqlite}
+SQLite Consortium,
+``SQLite documentation,''
+SQLite Official Documentation.
+
+\bibitem{streamlit}
+Streamlit Inc.,
+``Streamlit documentation,''
+Streamlit Official Documentation, accessed May 2026.
+
+\bibitem{pandas}
+The pandas Development Team,
+``pandas documentation,''
+pandas Official Documentation, accessed May 2026.
+
+\end{thebibliography}
+
+\end{document}
